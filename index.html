@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ebe0ff">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Cocina de la semana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: tablero de nevera en pastel — saludo + aro de progreso, rejilla de 7 días con un color por día, barra de compra al pie */
+:root{
+  --bg:#f6f4fb; --surface:#ffffff; --ink:#2b2840; --muted:#6f6a86; --line:#e6e1f2;
+  --accent:#7b6cd9; --accent-ink:#ffffff; --accent-soft:#ece8ff;
+  --mint:#d4f1e4; --mint-ink:#24785a; --butter:#fff0bf; --butter-ink:#8a6a00;
+  --peach:#ffe0d1; --sky:#d8eaff; --lilac:#ebe0ff; --rose:#ffdbe7; --pist:#e5f3cc;
+  --done:#3fa37c; --danger:#c2453a; --shadow:0 6px 20px rgba(80,60,160,.08);
+  --display:"Fredoka", "Avenir Next Rounded", "Trebuchet MS", sans-serif;
+  --body:"Nunito", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1824; --surface:#24212f; --ink:#f0edf8; --muted:#a8a2bd; --line:#363247;
+  --accent:#a99bff; --accent-ink:#1a1824; --accent-soft:#2f2a4a;
+  --mint:#1f3a30; --mint-ink:#8fe0bd; --butter:#3a3320; --butter-ink:#f3d27a;
+  --peach:#3d2b26; --sky:#22303f; --lilac:#2f2840; --rose:#3d2631; --pist:#2b3522;
+  --done:#6fd3a8; --danger:#ff8a7e; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1824; --surface:#24212f; --ink:#f0edf8; --muted:#a8a2bd; --line:#363247;
+  --accent:#a99bff; --accent-ink:#1a1824; --accent-soft:#2f2a4a;
+  --mint:#1f3a30; --mint-ink:#8fe0bd; --butter:#3a3320; --butter-ink:#f3d27a;
+  --peach:#3d2b26; --sky:#22303f; --lilac:#2f2840; --rose:#3d2631; --pist:#2b3522;
+  --done:#6fd3a8; --danger:#ff8a7e; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+button{font:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;display:inline-flex;gap:6px;align-items:center;transition:transform .15s, border-color .15s}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:4px 12px;font-size:13px;border-width:1.5px;background:color-mix(in srgb, var(--surface) 70%, transparent)}
+.btn[disabled]{opacity:.55;cursor:wait;transform:none}
+
+header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:800}
+.title h1{font-size:clamp(28px,4.2vw,42px);font-weight:600;line-height:1.08}
+.title .range{color:var(--muted);margin-top:4px;font-weight:600}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.hero{display:flex;gap:18px;align-items:center;background:linear-gradient(120deg,var(--lilac),var(--rose) 45%,var(--peach));border-radius:22px;padding:16px 20px;margin-bottom:14px;flex-wrap:wrap}
+.ring{--p:0;width:86px;height:86px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--done) calc(var(--p)*1%), color-mix(in srgb, var(--surface) 65%, transparent) 0);transition:background .4s}
+.ring span{width:66px;height:66px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--display);font-weight:600;font-size:20px;font-variant-numeric:tabular-nums}
+.hero-text{flex:1;min-width:200px}
+.hero-text h2{font-size:21px;font-weight:600}
+.hero-text p{margin:2px 0 0;color:var(--ink);opacity:.8}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.stat{background:color-mix(in srgb, var(--surface) 75%, transparent);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+
+.weekbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--surface);border-radius:16px;padding:10px 12px;margin-bottom:16px;box-shadow:var(--shadow)}
+.nav{display:flex;gap:6px;align-items:center}
+.nav button{width:40px;height:40px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);font-size:20px;font-weight:800}
+.nav button[disabled]{opacity:.4;cursor:default}
+.cycle{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.chip{font-size:12px;font-weight:800;border-radius:999px;padding:4px 12px;background:var(--mint);color:var(--mint-ink)}
+.chip.rep{background:var(--butter);color:var(--butter-ink)}
+.chip.now{box-shadow:0 0 0 2px currentColor inset}
+.repeat-pick{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);font-weight:700}
+.repeat-pick select{font:inherit;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:4px 8px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}
+.day{--tint:var(--lilac);background:var(--surface);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;min-width:0;box-shadow:var(--shadow);border:2px solid transparent;transition:transform .2s}
+.grid .day:nth-child(1){--tint:var(--peach)}.grid .day:nth-child(2){--tint:var(--mint)}.grid .day:nth-child(3){--tint:var(--sky)}
+.grid .day:nth-child(4){--tint:var(--butter)}.grid .day:nth-child(5){--tint:var(--lilac)}.grid .day:nth-child(6){--tint:var(--rose)}.grid .day:nth-child(7){--tint:var(--pist)}
+.day.today{border-color:var(--accent)}
+.dayhead{background:var(--tint);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dayhead h2{font-size:21px;font-weight:600}
+.dayhead .date{font-size:13px;color:var(--ink);opacity:.75;font-variant-numeric:tabular-nums;font-weight:700}
+.todaytag{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-right:4px;opacity:1}
+.daybody{padding:10px 12px 14px;display:flex;flex-direction:column;gap:10px}
+.dayok{display:none;align-self:flex-start;background:var(--mint);color:var(--mint-ink);font-weight:800;font-size:12px;border-radius:999px;padding:2px 10px}
+.day.complete .dayok{display:inline-block}
+.day.complete .dayhead{background:linear-gradient(90deg,var(--tint),var(--mint))}
+.item{background:color-mix(in srgb, var(--tint) 35%, var(--surface));border-radius:14px;padding:10px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;transition:background .2s}
+.item.session{background:var(--butter);}
+.slot{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.session .slot{color:var(--butter-ink)}
+.name{font-weight:800;line-height:1.35;overflow-wrap:anywhere}
+.item.isdone{background:var(--mint)}
+.item.isdone .name{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:var(--done);opacity:.75}
+.meta{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:2px}
+.safe{font-size:12px;color:var(--muted);font-weight:700}
+.check{width:28px;height:28px;border-radius:50%;border:2.5px solid color-mix(in srgb, var(--ink) 25%, transparent);background:var(--surface);display:grid;place-items:center;padding:0;color:transparent;margin-top:2px;transition:transform .15s, background .15s}
+.check:hover{border-color:var(--done);transform:scale(1.08)}
+.isdone .check{background:var(--done);border-color:var(--done);color:var(--surface);animation:pop .35s ease}
+.check svg{width:16px;height:16px}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+.shopbar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb, var(--surface) 88%, transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding-block:12px calc(12px + env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:flex;justify-content:center;gap:10px;flex-wrap:wrap;z-index:5}
+.shopbar .btn{padding:12px 26px;font-size:16px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb, var(--accent) 70%, #ff8fb1));border:0}
+
+.empty{background:var(--surface);border-radius:20px;padding:28px;text-align:center;color:var(--muted);box-shadow:var(--shadow)}
+.empty h2{color:var(--ink);font-size:22px;margin-bottom:6px}
+
+.overlay{position:fixed;inset:0;background:rgba(30,20,60,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:env(safe-area-inset-top, 0px) 0 0}
+@media (min-width:700px){.overlay{align-items:center;padding:24px}}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px max(18px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px))}
+@media (min-width:700px){.sheet{border-radius:24px}}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px;background:linear-gradient(120deg,var(--lilac),var(--sky));margin:-20px -18px 14px;padding:20px 18px 16px}
+.sheet h2{font-size:24px;font-weight:600;line-height:1.15}
+.close{border:0;background:var(--surface);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:20px;flex:none}
+.sheet h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:18px 0 6px;font-family:var(--body);font-weight:800}
+.sheet ul,.sheet ol{margin:0;padding-left:20px;display:grid;gap:6px}
+.sheet p{margin:0 0 10px}
+.note{background:var(--mint);border-radius:14px;padding:10px 12px;margin-top:10px}
+.note.tm{background:var(--butter)}
+.note b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.steps-t{list-style:none;padding:0 !important}
+.steps-t li{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:10px;border-radius:12px;background:color-mix(in srgb, var(--butter) 45%, var(--surface))}
+.steps-t .t{font-family:var(--display);font-weight:600;color:var(--butter-ink);font-variant-numeric:tabular-nums}
+.steps-t .y{display:block;font-size:13px;color:var(--muted);font-weight:700}
+.shop-cat{margin-top:14px;background:color-mix(in srgb, var(--sky) 40%, var(--surface));border-radius:14px;padding:10px 12px}
+.shop-cat:nth-of-type(2n){background:color-mix(in srgb, var(--rose) 40%, var(--surface))}
+.shop-cat:nth-of-type(3n){background:color-mix(in srgb, var(--pist) 50%, var(--surface))}
+.shop-cat h3{margin-top:0}
+.shop-item{display:flex;gap:10px;align-items:flex-start;padding:5px 0}
+.shop-item input{width:20px;height:20px;margin-top:2px;accent-color:var(--done);flex:none}
+.shop-item.got span{text-decoration:line-through;color:var(--muted)}
+.ingbtn{margin-top:8px}
+.ingbtn.ready{background:var(--mint);border-color:var(--done);color:var(--mint-ink)}
+.ings,.ingbox{margin-top:6px;background:var(--surface);border-radius:12px;padding:4px 10px}
+.ingbox{background:color-mix(in srgb, var(--sky) 45%, var(--surface));padding:10px 12px 10px 28px;margin-bottom:12px}
+.sheet-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.gen-status{margin-top:12px;font-size:14px;color:var(--muted);white-space:pre-wrap}
+.err{color:var(--danger)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;font-weight:700;z-index:30}
+.confetti{position:fixed;pointer-events:none;width:9px;height:9px;border-radius:2px;z-index:40;animation:fall 900ms ease-out forwards}
+@keyframes fall{to{transform:translate(var(--dx),var(--dy)) rotate(540deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}.confetti{display:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title">
+      <div class="eyebrow">Cocina de la semana · batch cooking familiar</div>
+      <h1 id="weekTitle">Cargando el plan…</h1>
+      <div class="range" id="weekRange"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="helpBtn" type="button">Cómo funciona</button>
+      <button class="btn primary" id="genBtn" type="button">Generar 2 semanas</button>
+    </div>
+  </header>
+
+  <section class="hero" id="hero" hidden>
+    <div class="ring" id="ring"><span id="ringTxt">0%</span></div>
+    <div class="hero-text">
+      <h2 id="cheer">¡Empezamos!</h2>
+      <p id="cheerSub"></p>
+      <div class="stats"><span class="stat" id="statDone">0 de 0 hechos</span><span class="stat" id="statDays">0 días completos</span></div>
+    </div>
+  </section>
+
+  <div class="weekbar" id="weekbar" hidden>
+    <div class="nav">
+      <button type="button" id="prevBtn" aria-label="Semana anterior">‹</button>
+      <button type="button" id="nextBtn" aria-label="Semana siguiente">›</button>
+    </div>
+    <div class="cycle" id="cycleChips"></div>
+    <div class="repeat-pick" id="repeatPick" hidden>
+      <label for="repeatSel">Repite:</label>
+      <select id="repeatSel"></select>
+    </div>
+  </div>
+
+  <main id="main">
+    <div class="empty" id="emptyState">
+      <h2>Aquí aparecerá vuestra semana</h2>
+      <p>Siete días con las sesiones de cocina, la comida y la cena. Cargando el plan…</p>
+    </div>
+    <div class="grid" id="grid" hidden></div>
+  </main>
+</div>
+
+<div class="shopbar">
+  <button class="btn primary" id="shopBtn" type="button" disabled>Generar lista de la compra</button>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <h2 id="sheetTitle"></h2>
+      <button class="close" id="closeBtn" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<script id="seed" type="application/json">{"calendar": {"start": "2026-11-01", "slots": [{"week": "w1"}, {"week": "w2"}, {"week": "w1", "repeat": true}]}, "weeks": {"w1": {"n": 1, "title": "Semana 1 · Otoño clásico", "sessions": [{"key": "s-dom", "day": 0, "title": "Sesión del domingo por la tarde", "time": "2 h", "intro": "De 17:00 a 19:00, más o menos. Deja hecha la cena del domingo y las bases de lunes a miércoles: lentejas, pollo, crema, albóndigas y arroz.", "steps": [{"t": "0:00", "text": "Horno a 200 ºC. Pollo: 2 kg de contramuslo deshuesado con AOVE, sal y ajo. A la mitad, pimentón y orégano; la otra mitad, sencilla. En otra bandeja: 4 patatas, 2 boniatos y ½ calabaza en dados (bandeja tricolor). 35–40 min.", "yield": "Cena de hoy, bowl del martes, pizza del viernes", "ing": ["2 kg de contramuslo de pollo deshuesado", "4 patatas", "2 boniatos", "½ calabaza", "AOVE", "Sal", "Ajo en polvo", "Pimentón dulce", "Orégano"]}, {"t": "0:05", "text": "Thermomix, lentejas: 1 cebolla, 1 zanahoria, ½ pimiento rojo y 1 ajo 5 s / vel 5; sofríe 8 min / 120 ºC / vel 1. Añade 400 g de lentejas pardinas, 1 tomate, laurel, pimentón y 1,2 L de agua: 40 min / 100 ºC / giro inverso / vel cuchara. Para las chicas, tritura un cuenco de verduras y caldo y mézclalo: salsa lisa.", "yield": "Comida del lunes + 4 raciones al congelador", "ing": ["1 cebolla", "1 zanahoria", "½ pimiento rojo", "1 diente de ajo", "400 g de lentejas pardinas", "1 tomate", "1 hoja de laurel", "1 cdta de pimentón dulce", "1,2 L de agua", "AOVE"]}, {"t": "0:15", "text": "Albóndigas: 1,2 kg de picada de pollo o pavo, 2 huevos, 60 g de pan rallado, 40 g de queso rallado, sal y ajo. Bolas y al horno cuando salga el pollo (200 ºC, 15–18 min).", "yield": "Unas 45: miércoles + congelador", "ing": ["1,2 kg de picada de pollo o pavo", "2 huevos", "60 g de pan rallado", "40 g de queso rallado", "Sal", "Ajo en polvo"]}, {"t": "0:20", "text": "Arroz: 500 g en una olla. Tomate para las albóndigas: 1 bote de tomate triturado con ajo y orégano, 15 min en un cazo.", "yield": "Bowl del martes y albóndigas", "ing": ["500 g de arroz", "1 bote de tomate triturado (800 g)", "1 diente de ajo", "Orégano"]}, {"t": "0:50", "text": "Thermomix, crema de calabaza y manzana: 1 cebolla y 1 puerro 5 s / vel 5, sofríe 5 min / 120 ºC / vel 1. Añade 1 kg de calabaza, 2 zanahorias, 2 manzanas, 1 patata y agua hasta 1,5 L: 25 min / 100 ºC / vel 1. En el Varoma, 10 huevos. Tritura 1 min / vel 5–10 con 200 g de queso fresco batido.", "yield": "Cenas del lunes y martes + 10 huevos duros", "ing": ["1 cebolla", "1 puerro", "1 kg de calabaza", "2 zanahorias", "2 manzanas", "1 patata", "200 g de queso fresco batido", "10 huevos", "AOVE", "Sal"]}, {"t": "1:25", "text": "Salsa de yogur en la Thermomix: 500 g de yogur griego, ½ limón, 1 ajo, sal y eneldo, 10 s / vel 4.", "yield": "Toda la semana", "ing": ["500 g de yogur griego", "½ limón", "1 diente de ajo", "Sal", "Eneldo"]}, {"t": "1:35", "text": "Enfría rápido (menos de 1 h fuera de la nevera), reparte en tápers con fecha y congela la mitad de las albóndigas y 4 raciones de lentejas.", "yield": "", "ing": ["Tápers de cristal", "Etiquetas y rotulador"]}], "tip": "La cena del domingo sale directamente del horno: pollo recién hecho con la bandeja tricolor."}, {"key": "s-mie", "day": 3, "title": "Sesión del miércoles", "time": "60 min", "intro": "Deja lista la boloñesa de pavo para la pasta del jueves, el pavo para los wraps del viernes y el hummus.", "steps": [{"t": "0:00", "text": "Thermomix, boloñesa de pavo: 2 cebollas, 2 zanahorias y 1 calabacín 5 s / vel 5; sofríe 8 min / 120 ºC / vel 1. Añade 800 g de picada de pavo y 800 g de tomate triturado: 25 min / 100 ºC / giro inverso / vel cuchara.", "yield": "Pasta del jueves", "ing": ["2 cebollas", "2 zanahorias", "1 calabacín", "800 g de picada de pavo", "800 g de tomate triturado", "AOVE", "Sal"]}, {"t": "0:05", "text": "Pavo a la plancha: 600 g de pechuga en filetes, 3 min por lado, a tiras.", "yield": "Wraps del viernes y post-entreno", "ing": ["600 g de pechuga de pavo en filetes", "AOVE", "Sal"]}, {"t": "0:30", "text": "Hummus en la Thermomix (cuando acabe la boloñesa): 1 bote de garbanzos escurrido, 1 cda de tahini, zumo de ½ limón, 1 ajo pequeño, comino, sal y AOVE, 1 min / vel 5–7.", "yield": "Wraps y meriendas", "ing": ["1 bote de garbanzos cocidos", "1 cda de tahini", "½ limón", "1 diente de ajo pequeño", "Comino", "Sal", "AOVE"]}, {"t": "0:35", "text": "Cena del día: salmón al horno, 4 lomos con limón y sal, 12–15 min a 200 ºC.", "yield": "", "ing": ["4 lomos de salmón", "1 limón", "Sal"]}]}], "days": [{"name": "Domingo", "meals": [{"key": "d0-comida", "slot": "Comida", "name": "Comida sencilla o libre (la cocina es por la tarde)", "safe": "Pan", "time": "15 min", "from": "Se cocina en el momento", "ingredients": ["Opción rápida: 6 huevos a la plancha", "4 patatas al microondas o pan", "Ensalada de tomate"], "steps": ["Si coméis fuera, plato equilibrado: ½ verdura, ¼ proteína, ¼ hidrato.", "En casa: huevos a la plancha con patata y ensalada, sin ensuciar mucho: por la tarde se cocina."], "kids": "Huevo con patata suele ser un plato seguro."}, {"key": "d0-cena", "slot": "Cena", "name": "Pollo asado + bandeja tricolor + ensalada", "safe": "Patata asada", "time": "Recién hecho", "from": "Sesión del domingo", "ingredients": ["Pollo asado (≈500 g)", "Bandeja tricolor", "Lechuga, tomate y pepino"], "steps": ["Sirve el pollo recién sacado del horno.", "Bandeja tricolor al centro para que cada uno coja.", "Ensalada aparte."], "kids": "Pollo de la mitad sin especias y patata asada.", "sport": "Doble ración de pollo."}]}, {"name": "Lunes", "meals": [{"key": "d1-comida", "slot": "Comida", "name": "Lentejas estofadas + mandarina", "safe": "Arroz blanco aparte, pan", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Lentejas de la sesión", "Arroz que quede", "Mandarinas"], "steps": ["Calienta las lentejas.", "Para las chicas, la versión de salsa lisa.", "Mandarina de postre: su vitamina C ayuda a absorber el hierro."], "sport": "Añade un huevo duro picado por encima."}, {"key": "d1-cena", "slot": "Cena", "name": "Crema de calabaza y manzana + sándwich caliente de atún y queso", "safe": "Pan de molde", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Crema (4 raciones)", "8 rebanadas de pan de molde integral", "3 latas de atún", "Queso en lonchas"], "steps": ["Calienta la crema.", "Monta los sándwiches y tuéstalos 2–3 min por lado."]}]}, {"name": "Martes", "meals": [{"key": "d2-comida", "slot": "Comida", "name": "Bowl de montaje: arroz, pollo, bandeja tricolor, garbanzos crujientes y salsa de yogur", "safe": "Arroz blanco", "time": "15 min", "from": "Sesión del domingo", "ingredients": ["Arroz cocido", "Pollo asado en tiras", "Resto de la bandeja tricolor", "½ bote de garbanzos", "Maíz y tomate cherry", "Salsa de yogur"], "steps": ["Garbanzos escurridos con pimentón en freidora de aire o sartén 8 min hasta que crujan.", "Calienta arroz, pollo y verduras.", "Todo en cuencos: cada uno monta su bowl."], "kids": "Los garbanzos crujientes, como «snack», entran mejor que en guiso."}, {"key": "d2-cena", "slot": "Cena", "name": "Crema de calabaza (2.º día) + huevos duros + pan", "safe": "Pan", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Crema de calabaza", "8 huevos duros", "Pan", "Salsa de yogur"], "steps": ["Calienta la crema.", "Huevos duros partidos con un poco de sal o la salsa de yogur."]}]}, {"name": "Miércoles", "meals": [{"key": "d3-comida", "slot": "Comida", "name": "Albóndigas en tomate + arroz o puré", "safe": "Arroz, patata", "time": "15 min", "from": "Sesión del domingo", "ingredients": ["Mitad de las albóndigas", "Tomate de la sesión", "Arroz o puré de patata"], "steps": ["Calienta las albóndigas en la salsa 8–10 min.", "Sirve con arroz o puré; salsa aparte para quien las prefiera solas."], "tm": "Puré: 800 g de patata en trozos, 400 ml de leche y sal, 20 min / 100 ºC / vel 1; luego 20 s / vel 3 con un poco de mantequilla."}, {"key": "d3-cena", "slot": "Cena", "name": "Salmón al horno + patata o boniato + brócoli", "safe": "Patata", "time": "15′", "from": "Se cocina en el momento", "ingredients": ["4 lomos de salmón", "2 patatas o boniatos", "1 brócoli", "Limón, AOVE y sal"], "steps": ["Salmón con limón y sal, 12–15 min a 200 ºC.", "Patata o boniato al microondas 8 min.", "Brócoli al vapor (Varoma 15 min) o microondas 4 min."]}]}, {"name": "Jueves", "meals": [{"key": "d4-comida", "slot": "Comida", "name": "Macarrones con boloñesa de pavo + queso rallado", "safe": "Pasta", "time": "15 min", "from": "Sesión del miércoles", "ingredients": ["400 g de macarrones", "Boloñesa de pavo", "Queso rallado", "Ensalada"], "steps": ["Cuece la pasta.", "Calienta la boloñesa y sirve encima o aparte.", "Queso rallado en la mesa."], "kids": "La verdura va triturada en la salsa.", "sport": "Más pasta los días de entreno."}, {"key": "d4-cena", "slot": "Cena", "name": "Nuggets de merluza en panko + ensalada", "safe": "Pan", "time": "15′", "from": "Se cocina en el momento", "ingredients": ["600 g de merluza sin espinas", "2 huevos", "Panko", "Ensalada"], "steps": ["Tacos de merluza por huevo y panko.", "Horno a 200 ºC 12 min o freidora de aire 180 ºC 10 min.", "Salsa de yogur aparte."], "kids": "El rebozado crujiente suele ser la puerta de entrada al pescado."}]}, {"name": "Viernes", "meals": [{"key": "d5-comida", "slot": "Comida", "name": "Wraps de pavo con hummus, queso y verduras", "safe": "Tortilla de trigo", "time": "10 min", "from": "Sesión del miércoles", "ingredients": ["Pavo a tiras", "8 tortillas de trigo", "Hummus", "Queso en lonchas", "Lechuga, tomate y zanahoria rallada"], "steps": ["Calienta el pavo 2 min en sartén y las tortillas.", "Todo en el centro: cada uno monta su wrap."]}, {"key": "d5-cena", "slot": "Cena", "name": "Pizza casera de montaje", "safe": "Pizza solo con queso", "time": "15′", "from": "Se monta en el momento", "ingredients": ["2 bases de pizza", "Tomate triturado", "2 bolas de mozzarella", "Pollo asado sobrante", "Jamón cocido", "Champiñones"], "steps": ["Horno a 220 ºC.", "Cada una monta su mitad.", "10–12 min de horno."], "kids": "Que cada una elija sus ingredientes."}]}, {"name": "Sábado", "meals": [{"key": "d6-comida", "slot": "Comida", "name": "Hamburguesas caseras de ternera + patatas al horno (o comida libre)", "safe": "Pan", "time": "25 min", "from": "Se cocina en el momento", "ingredients": ["500 g de picada de ternera", "1 huevo", "4 panes de hamburguesa", "Lechuga, tomate, queso", "4 patatas"], "steps": ["Patatas en gajos 200 ºC 25 min.", "Mezcla la carne con huevo, sal y ajo y forma 4–5 hamburguesas.", "Plancha 3–4 min por lado."], "kids": "Es la carne roja de la semana: aporta hierro, importante para ellas.", "sport": "Dos hamburguesas o una con huevo."}, {"key": "d6-cena", "slot": "Cena", "name": "Revuelto de champiñones + hummus y crudités", "safe": "Pan de pita", "time": "10 min", "from": "Sesión del miércoles", "ingredients": ["6 huevos", "250 g de champiñones", "Hummus", "Zanahoria y pepino", "Pan de pita"], "steps": ["Saltea los champiñones y haz el revuelto.", "Hummus, crudités y pita en el centro."]}]}], "shopping": [{"cat": "Carne, pescado y huevos", "items": ["Contramuslo de pollo deshuesado, 2 kg", "Carne picada de pollo o pavo, 1,2 kg (albóndigas)", "Carne picada de pavo, 800 g (boloñesa)", "Pechuga de pavo en filetes, 600 g", "Carne picada de ternera, 500 g (sábado)", "Salmón, 4 lomos (miércoles)", "Merluza sin espinas, 600 g (miércoles o congelada)", "Huevos, 3 docenas", "Atún al natural, 4 latas", "Jamón cocido extra, 150 g"]}, {"cat": "Lácteos", "items": ["Yogur griego natural, 2 kg", "Queso fresco batido 0 %, 500 g", "Leche, 6 L", "Mozzarella, 2 bolas", "Queso rallado, 1 bolsa", "Queso en lonchas, 1 paquete"]}, {"cat": "Hidratos y legumbres", "items": ["Arroz, 1 kg", "Macarrones, 500 g", "Lentejas pardinas, 500 g", "Garbanzos cocidos, 2 botes", "Copos de avena, 1 kg", "Pan rallado y panko", "Pan integral, pan de molde, pan de hamburguesa y pan de pita", "Tortillas de trigo, 1 paquete", "Bases de pizza, 2", "Patatas, 3 kg", "Boniatos, 1 kg"]}, {"cat": "Verdura y fruta", "items": ["Calabaza, 1,5 kg", "Zanahorias, 1 kg", "Calabacín, 1", "Cebollas, 2 kg", "Puerro, 1", "Ajos, 1 cabeza", "Pimiento rojo, 1", "Brócoli, 1", "Champiñones, 500 g", "Lechuga o mezcla de hojas, 2", "Tomates y tomate cherry, 1 kg", "Pepino, 2", "Maíz, 1 lata", "Tomate triturado, 3 botes de 800 g", "Manzanas, 1 kg", "Plátanos, 1,5 kg", "Mandarinas, 2 kg", "Kiwis, 1 kg", "Limones, 4"]}, {"cat": "Despensa", "items": ["AOVE", "Tahini", "Crema de cacahuete 100 %", "Cacao puro", "Frutos secos naturales", "Pimentón, orégano, comino, ajo en polvo, eneldo y laurel"]}]}, "w2": {"n": 2, "title": "Semana 2 · Horno y cuchara", "sessions": [{"key": "s-dom", "day": 0, "title": "Sesión del domingo por la tarde", "time": "2 h", "intro": "De 17:00 a 19:00, más o menos. Solomillo de pavo para la cena, hamburguesas de garbanzos para el lunes, pollo al curry suave y crema de calabacín.", "steps": [{"t": "0:00", "text": "Horno a 200 ºC. 1,2 kg de solomillo de pavo con AOVE, sal, ajo y romero, en una bandeja con 1 kg de patatas y 4 zanahorias en rodajas. 30–35 min.", "yield": "Cena de hoy + wraps del martes", "ing": ["1,2 kg de solomillo de pavo", "1 kg de patatas", "4 zanahorias", "AOVE", "Sal", "Ajo", "Romero"]}, {"t": "0:05", "text": "Thermomix, sofrito del curry: 2 cebollas y 1 ajo 5 s / vel 5; sofríe 6 min / 120 ºC / vel 1 y pásalo a una olla. Curry suave: añade 1,4 kg de pechuga de pollo en dados, dora 5 min; echa 1 lata de leche de coco ligera, 400 g de tomate triturado, 1 cdta de curry suave y sal. 20 min a fuego bajo.", "yield": "Martes y miércoles", "ing": ["2 cebollas", "1 diente de ajo", "1,4 kg de pechuga de pollo", "1 lata de leche de coco ligera", "400 g de tomate triturado", "1 cdta de curry suave", "Sal", "AOVE"]}, {"t": "0:15", "text": "Hamburguesas de garbanzos: 2 botes de garbanzos escurridos, 1 calabacín rallado, 40 g de queso rallado, 1 huevo, comino, sal y 6 cdas de avena (Thermomix 10 s / vel 4, sin que quede pasta). Forma 10 y hornea 200 ºC 15 min cuando salga el pavo, vuelta a mitad.", "yield": "Comida del lunes + 4 al congelador", "ing": ["2 botes de garbanzos cocidos", "1 calabacín", "40 g de queso rallado", "1 huevo", "6 cdas de copos de avena", "Comino", "Sal"]}, {"t": "0:25", "text": "Thermomix, crema de calabacín: 1 puerro 5 s / vel 5, sofríe 5 min / 120 ºC / vel 1. Añade 4 calabacines, 2 patatas y agua hasta 1,3 L: 22 min / 100 ºC / vel 1. En el Varoma, 8 huevos. Tritura 1 min / vel 5–10 con 4 quesitos.", "yield": "Cenas del lunes y sábado + 8 huevos duros", "ing": ["1 puerro", "4 calabacines", "2 patatas", "4 quesitos", "8 huevos", "AOVE", "Sal"]}, {"t": "0:40", "text": "Arroz basmati: 600 g en una olla, 12 min.", "yield": "Curry del martes", "ing": ["600 g de arroz basmati"]}, {"t": "1:00", "text": "Thermomix, tomate frito casero: 800 g de tomate triturado, 1 ajo y AOVE, 20 min / Varoma / vel 1 sin cubilete (cestillo encima).", "yield": "Pasta del jueves, albóndigas y pizza", "ing": ["800 g de tomate triturado", "1 diente de ajo", "AOVE"]}, {"t": "1:30", "text": "Enfría rápido, reparte en tápers con fecha y congela 4 hamburguesas y 2 raciones de crema (para el sábado).", "yield": "", "ing": ["Tápers de cristal", "Etiquetas y rotulador"]}], "tip": "El curry se queda suave para las chicas; curry picante o guindilla en un cuenco aparte para los adultos."}, {"key": "s-mie", "day": 3, "title": "Sesión del miércoles", "time": "60 min", "intro": "Quiche para el jueves y la pasta gratinada lista para el horno.", "steps": [{"t": "0:00", "text": "Quiche: horno a 190 ºC. Thermomix: 1 calabacín, 1 zanahoria y ½ cebolla 4 s / vel 5. Bate con 6 huevos, 200 ml de leche, 100 g de queso rallado, sal y pimienta. Vierte en masa quebrada y hornea 35 min.", "yield": "Cena del jueves", "ing": ["1 masa quebrada", "1 calabacín", "1 zanahoria", "½ cebolla", "6 huevos", "200 ml de leche", "100 g de queso rallado", "Sal y pimienta"]}, {"t": "0:10", "text": "Pasta gratinada para el jueves: cuece 400 g de macarrones, mezcla con 3 latas de atún y la mitad del tomate frito casero, mozzarella por encima, film y a la nevera.", "yield": "Comida del jueves", "ing": ["400 g de macarrones", "3 latas de atún", "½ del tomate frito casero", "1 bola de mozzarella"]}, {"t": "0:25", "text": "Cena del día: fideos de arroz con salmón y verduras (ver receta).", "yield": "", "ing": ["4 lomos de salmón", "250 g de fideos de arroz", "2 cebollas", "3 zanahorias", "Salsa de soja"]}, {"t": "—", "text": "Recuerda: el jueves por la noche pasa las albóndigas del congelador (semana 1) a la nevera para el viernes.", "yield": ""}]}], "days": [{"name": "Domingo", "meals": [{"key": "d0-comida", "slot": "Comida", "name": "Comida sencilla o libre (la cocina es por la tarde)", "safe": "Pan", "time": "15 min", "from": "Se cocina en el momento", "ingredients": ["Opción rápida: 6 huevos a la plancha", "4 patatas al microondas o pan", "Ensalada de tomate"], "steps": ["Si coméis fuera, plato equilibrado: ½ verdura, ¼ proteína, ¼ hidrato.", "En casa: huevos a la plancha con patata y ensalada, sin ensuciar mucho: por la tarde se cocina."], "kids": "Huevo con patata suele ser un plato seguro."}, {"key": "d0-cena", "slot": "Cena", "name": "Solomillo de pavo asado con patatas y zanahoria", "safe": "Patata", "time": "Recién hecho", "from": "Sesión del domingo", "ingredients": ["Mitad del solomillo", "Patatas y zanahorias asadas", "Ensalada"], "steps": ["Deja reposar el pavo 5 min y córtalo en medallones.", "Sirve con la bandeja y la ensalada aparte."], "sport": "Doble ración."}]}, {"name": "Lunes", "meals": [{"key": "d1-comida", "slot": "Comida", "name": "Hamburguesas de garbanzos y calabacín en pan + ensalada", "safe": "Pan de hamburguesa", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["6 hamburguesas de garbanzos", "4 panes de hamburguesa", "Queso en lonchas", "Tomate y lechuga"], "steps": ["Calienta las hamburguesas en sartén 2 min por lado.", "Monta con queso fundido encima."], "kids": "En pan y con queso fundido, la legumbre entra mucho mejor.", "sport": "Añade un huevo a la plancha."}, {"key": "d1-cena", "slot": "Cena", "name": "Crema de calabacín + huevos rellenos de atún", "safe": "Pan", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Crema de calabacín", "8 huevos duros", "2 latas de atún", "2 cdas de mayonesa o yogur griego"], "steps": ["Saca las yemas, mézclalas con atún y mayonesa o yogur, y rellena.", "Calienta la crema."]}]}, {"name": "Martes", "meals": [{"key": "d2-comida", "slot": "Comida", "name": "Pollo al curry suave con arroz basmati", "safe": "Arroz blanco", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Mitad del curry", "Arroz basmati", "Yogur natural"], "steps": ["Calienta curry y arroz por separado.", "Sirve el arroz y el pollo al lado, sin mezclar."], "kids": "El arroz blanco aparte es su alimento seguro."}, {"key": "d2-cena", "slot": "Cena", "name": "Wraps de pavo asado con queso, lechuga y salsa de yogur", "safe": "Tortilla de trigo", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Resto del solomillo de pavo en tiras", "8 tortillas de trigo", "Queso", "Lechuga y tomate", "Salsa de yogur"], "steps": ["Calienta el pavo y las tortillas.", "Cada uno monta su wrap."]}]}, {"name": "Miércoles", "meals": [{"key": "d3-comida", "slot": "Comida", "name": "Pollo al curry (2.º día) con cuscús", "safe": "Cuscús solo", "time": "10 min", "from": "Sesión del domingo", "ingredients": ["Resto del curry", "300 g de cuscús"], "steps": ["Cuscús: mismo volumen de agua hirviendo con sal, 5 min tapado, y suelta con un tenedor.", "Calienta el curry y sirve al lado."]}, {"key": "d3-cena", "slot": "Cena", "name": "Fideos de arroz con salmón y verduras", "safe": "Fideos solos", "time": "20 min", "from": "Se cocina en el momento", "ingredients": ["4 lomos de salmón", "250 g de fideos de arroz", "2 cebollas", "3 zanahorias", "Salsa de soja"], "steps": ["Saltea cebolla y zanahoria en tiras 10 min.", "Fideos según el paquete, mezclados con las verduras y 3 cdas de soja.", "Salmón a la plancha tapado 3–4 min por lado, en trozos encima."], "kids": "Fideos, verdura y salmón en montoncitos separados."}]}, {"name": "Jueves", "meals": [{"key": "d4-comida", "slot": "Comida", "name": "Macarrones gratinados con atún y tomate casero", "safe": "Pasta", "time": "20 min de horno", "from": "Sesión del miércoles", "ingredients": ["Fuente montada el miércoles", "Ensalada"], "steps": ["Horno a 200 ºC 20 min, los últimos 5 con gratinador."], "sport": "Ración doble y yogur griego de postre."}, {"key": "d4-cena", "slot": "Cena", "name": "Quiche de verduras + ensalada", "safe": "Pan", "time": "5 min", "from": "Sesión del miércoles", "ingredients": ["Quiche", "Ensalada"], "steps": ["Sírvela templada o caliéntala 10 min a 180 ºC.", "Ensalada aparte."], "kids": "La verdura va rallada fina dentro del huevo."}]}, {"name": "Viernes", "meals": [{"key": "d5-comida", "slot": "Comida", "name": "Albóndigas del congelador en tomate + puré de patata", "safe": "Puré", "time": "20 min", "from": "Congelador (semana 1)", "ingredients": ["Albóndigas descongeladas", "Tomate frito casero", "800 g de patatas", "400 ml de leche"], "steps": ["Calienta las albóndigas en el tomate 10 min.", "Puré en la Thermomix (ver nota)."], "tm": "800 g de patata en trozos, 400 ml de leche y sal: 20 min / 100 ºC / vel 1; luego 20 s / vel 3 con un poco de mantequilla."}, {"key": "d5-cena", "slot": "Cena", "name": "Pizza casera de montaje", "safe": "Pizza solo con queso", "time": "15′", "from": "Se monta en el momento", "ingredients": ["2 bases de pizza", "Tomate frito casero", "2 bolas de mozzarella", "Jamón cocido", "Atún", "Champiñones o maíz"], "steps": ["Horno a 220 ºC.", "Cada una monta su mitad.", "10–12 min de horno."]}]}, {"name": "Sábado", "meals": [{"key": "d6-comida", "slot": "Comida", "name": "Guiso de ternera con patatas en la Thermomix (o comida libre)", "safe": "Patata, pan", "time": "1 h (casi sin atención)", "from": "Se cocina en el momento", "ingredients": ["500 g de ternera para guisar en dados", "1 cebolla, 1 zanahoria, 1 ajo", "2 cdas de tomate", "200 ml de vino o caldo", "600 g de patatas", "Laurel y pimentón"], "steps": ["Sofrito: cebolla, zanahoria y ajo 5 s / vel 5; 8 min / 120 ºC / vel 1.", "Añade la ternera, tomate y vino: 10 min / 120 ºC / giro inverso / vel cuchara.", "Añade patatas y caldo hasta cubrir: 45 min / 100 ºC / giro inverso / vel cuchara."], "kids": "La carne roja de la semana: hierro para ellas. Patata y pan como seguros."}, {"key": "d6-cena", "slot": "Cena", "name": "Crema de calabacín del congelador + tortilla francesa", "safe": "Pan", "time": "10 min", "from": "Congelador (domingo)", "ingredients": ["2 raciones de crema congeladas (más 2 de bote o un poco de leche)", "6 huevos", "Pan"], "steps": ["Calienta la crema.", "Tortillas francesas de 1–2 huevos por persona."]}]}], "shopping": [{"cat": "Carne, pescado y huevos", "items": ["Solomillo de pavo, 1,2 kg", "Pechuga de pollo, 1,4 kg", "Ternera para guisar, 500 g (sábado)", "Salmón, 4 lomos (miércoles)", "Huevos, 3 docenas", "Atún al natural, 6 latas", "Jamón cocido extra, 150 g"]}, {"cat": "Lácteos", "items": ["Yogur griego natural, 1,5 kg", "Yogur natural, 4", "Quesitos, 1 caja", "Leche, 6 L", "Mozzarella, 4 bolas", "Queso rallado, 2 bolsas", "Queso en lonchas, 1 paquete"]}, {"cat": "Hidratos y legumbres", "items": ["Arroz basmati, 1 kg", "Macarrones, 500 g", "Cuscús, 500 g", "Fideos de arroz, 250 g", "Garbanzos cocidos, 2 botes", "Copos de avena, 500 g", "Masa quebrada, 1", "Tortillas de trigo, 1 paquete", "Pan de hamburguesa y pan integral", "Bases de pizza, 2", "Patatas, 3,5 kg"]}, {"cat": "Verdura y fruta", "items": ["Calabacín, 6", "Zanahorias, 1 kg", "Cebollas, 1,5 kg", "Puerro, 1", "Ajos, 1 cabeza", "Champiñones, 250 g", "Lechuga, 2", "Tomates, 1 kg", "Tomate triturado, 2 botes de 800 g", "Plátanos, 1,5 kg", "Mandarinas, 2 kg", "Manzanas, 1 kg", "Granadas, 2", "Kiwis, 1 kg"]}, {"cat": "Despensa", "items": ["Leche de coco ligera, 1 lata", "Curry suave", "Salsa de soja", "Romero, comino, pimentón y laurel", "Caldo de pollo, 1 L", "AOVE, crema de cacahuete, cacao puro, frutos secos"]}]}}}</script>
+<script>
+(function(){
+  if (window.claude) return;
+  var seed = JSON.parse(document.getElementById("seed").textContent);
+  var LS = "cocina-local-v1", local;
+  try { local = JSON.parse(localStorage.getItem(LS) || "{}"); } catch (e) { local = {}; }
+  local.checks = local.checks || {};
+  function save(){ try { localStorage.setItem(LS, JSON.stringify(local)); } catch (e) {} }
+  var subs = {};
+  function emit(p){ (subs[p] || []).forEach(function(f){ f(); }); }
+  function calendar(){
+    var base = seed.calendar.slots, slots = [];
+    for (var i = 0; i < 52; i++) slots.push(JSON.parse(JSON.stringify(base[i % base.length])));
+    var ov = local.slotsOverride || [];
+    slots.forEach(function(s, i){ if (ov[i]) s.week = ov[i]; });
+    return { start: seed.calendar.start, slots: slots };
+  }
+  function snap(id, data){ return { id: id, exists: !!data, data: function(){ return data; }, metadata: {} }; }
+  function sub(path, run){ (subs[path] = subs[path] || []).push(run); setTimeout(run, 0); return function(){}; }
+  var db = {
+    doc: function(path){ return {
+      onSnapshot: function(fn){ return sub(path, function(){ fn(path === "plan/calendar" ? snap("calendar", calendar()) : snap(path, null)); }); },
+      set: async function(d){ if (path.indexOf("checks/") === 0){ local.checks[path.slice(7)] = d; save(); emit("checks"); } },
+      update: async function(d){ if (path === "plan/calendar" && d.slots){ local.slotsOverride = d.slots.map(function(s){ return s.week; }); save(); emit("plan/calendar"); } },
+      delete: async function(){ if (path.indexOf("checks/") === 0){ delete local.checks[path.slice(7)]; save(); emit("checks"); } }
+    }; },
+    collection: function(path){ var q = { limit: function(){ return q; }, onSnapshot: function(fn){ return sub(path, function(){
+      var src = path === "weeks" ? seed.weeks : local.checks;
+      var docs = Object.keys(src).map(function(id){ return snap(id, src[id]); });
+      fn({ docs: docs, size: docs.length, empty: !docs.length });
+    }); } }; return q; }
+  };
+  window.claude = { use: async function(n){ return n === "db" ? db : null; } };
+})();
+</script>
+<script>
+(() => {
+const DAYS = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+const state = { db:null, sample:null, calendar:null, weeks:{}, checks:{}, slot:0, userPicked:false };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmt(d){ return d.getDate() + " " + MONTHS[d.getMonth()]; }
+function isoOf(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function slotStart(i){ return addDays(parseDate(state.calendar.start), i*7); }
+function todaySlot(){
+  if(!state.calendar) return 0;
+  const diff = Math.floor((new Date().setHours(0,0,0,0) - parseDate(state.calendar.start)) / 86400000);
+  const i = Math.floor(diff/7);
+  return Math.max(0, Math.min(state.calendar.slots.length-1, i));
+}
+function toast(msg){
+  const t = document.createElement("div"); t.className="toast"; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(), 2200);
+}
+
+// ---------- Modal ----------
+let lastFocus = null;
+function openSheet(title, html){
+  lastFocus = document.activeElement;
+  $("sheetTitle").textContent = title;
+  state.sheetChange = null;
+  $("sheetBody").innerHTML = html;
+  $("overlay").hidden = false;
+  $("closeBtn").focus();
+}
+function closeSheet(){ $("overlay").hidden = true; if(lastFocus) lastFocus.focus(); }
+$("closeBtn").addEventListener("click", closeSheet);
+$("sheetBody").addEventListener("change", e => { if(state.sheetChange) state.sheetChange(e); });
+$("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeSheet(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("overlay").hidden) closeSheet(); });
+
+// ---------- Help ----------
+$("helpBtn").addEventListener("click", () => openSheet("Cómo funciona", `
+  <p>Se cocina <b>dos veces por semana</b>: el domingo por la tarde (unas 2 h) y el miércoles (unos 60 min).</p>
+  <p><b>Costumbres de casa:</b> los lunes, legumbre; los jueves, pasta; los viernes por la noche, pizza. Carne roja como mucho una vez por semana.</p>
+  <p> El resto de días solo se calienta, se monta o se hace algo de 15 minutos.</p>
+  <h3>Cada semana</h3>
+  <ul>
+    <li>Las tarjetas amarillas son las <b>sesiones de cocina</b>. Pulsa «Ver pasos» para seguir el orden con horno, fuegos y Thermomix a la vez.</li>
+    <li>En cada comida y cena, «Cómo se hace» explica cómo terminar el plato y de qué sesión sale.</li>
+    <li>Pulsa el círculo de la izquierda cuando esté cocinado. Se guarda en este móvil.</li>
+    <li>Abajo, «Generar lista de la compra» junta todo lo de la semana. Puedes tachar y copiarla al móvil.</li>
+  </ul>
+  <h3>Ciclo de 3 semanas</h3>
+  <ul>
+    <li>Cada ciclo tiene <b>2 semanas nuevas y 1 repetida</b>. Repetir ayuda a coger soltura y a saber qué gusta en casa.</li>
+    <li>En la semana repetida puedes elegir cuál de las dos anteriores se repite.</li>
+    <li>Las semanas nuevas se piden a Claude, que actualiza esta web. Mientras tanto, el ciclo de 3 semanas se repite solo.</li>
+  </ul>
+  <h3>En la mesa</h3>
+  <ul>
+    <li>Todos comen lo mismo y cambian las cantidades. El padre, doble de proteína; las chicas, más hidrato.</li>
+    <li>Salsas y especias siempre aparte, y un <b>alimento seguro</b> que las chicas aceptan en cada comida.</li>
+    <li>Los padres deciden qué se sirve; ellas deciden cuánto comen. Sin presión.</li>
+  </ul>`));
+
+// ---------- Rendering ----------
+function currentSlot(){ return state.calendar?.slots?.[state.slot]; }
+function currentWeek(){ const s = currentSlot(); return s ? state.weeks[s.week] : null; }
+function checkId(key){ return state.slot + "-" + key; }
+function isDone(key){ return !!state.checks[checkId(key)]; }
+
+function itemsOf(week){
+  const out = [];
+  (week.sessions||[]).forEach(s => out.push(s.key));
+  (week.days||[]).forEach(d => (d.meals||[]).forEach(m => out.push(m.key)));
+  return out;
+}
+
+function render(){
+  if(!state.calendar){ return; }
+  const slot = currentSlot(), week = currentWeek();
+  $("weekbar").hidden = false;
+  const start = slotStart(state.slot), end = addDays(start, 6);
+  $("weekRange").textContent = `Del ${fmt(start)} al ${fmt(end)} · semana ${state.slot+1} del calendario`;
+  $("prevBtn").disabled = state.slot === 0;
+  $("nextBtn").disabled = state.slot >= state.calendar.slots.length-1;
+
+  // cycle chips
+  const cycleStart = state.slot - (state.slot % 3);
+  const chips = [];
+  for(let i=cycleStart;i<cycleStart+3 && i<state.calendar.slots.length;i++){
+    const s = state.calendar.slots[i];
+    const w = state.weeks[s.week];
+    const label = (s.repeat ? "Repite " : "") + (w ? "Sem. " + w.n : "…");
+    chips.push(`<span class="chip ${s.repeat?"rep":""} ${i===state.slot?"now":""}">${esc(label)}</span>`);
+  }
+  $("cycleChips").innerHTML = chips.join("");
+
+  // repeat picker
+  if(slot.repeat){
+    const opts = [state.calendar.slots[state.slot-2], state.calendar.slots[state.slot-1]].filter(Boolean).map(s=>s.week);
+    const uniq = [...new Set(opts)];
+    $("repeatSel").innerHTML = uniq.map(id => `<option value="${esc(id)}" ${id===slot.week?"selected":""}>${esc(state.weeks[id]?.title || id)}</option>`).join("");
+    $("repeatPick").hidden = uniq.length < 2;
+  } else $("repeatPick").hidden = true;
+
+  if(!week){
+    $("weekTitle").textContent = "Semana sin cargar";
+    $("grid").hidden = true; $("emptyState").hidden = false;
+    $("shopBtn").disabled = true;
+    return;
+  }
+  $("weekTitle").textContent = (slot.repeat ? "Repetición · " : "") + week.title;
+  $("emptyState").hidden = true; $("grid").hidden = false;
+  $("shopBtn").disabled = !(week.shopping && week.shopping.length);
+
+  const todayIso = isoOf(new Date());
+  const sessionsByDay = {};
+  (week.sessions||[]).forEach(s => (sessionsByDay[s.day] ||= []).push(s));
+
+  $("grid").innerHTML = (week.days||[]).map((d, di) => {
+    const date = addDays(start, di);
+    const isToday = isoOf(date) === todayIso;
+    const sess = (sessionsByDay[di]||[]).map(s => `
+      <div class="item session ${isDone(s.key)?"isdone":""}">
+        <button class="check" type="button" data-check="${esc(s.key)}" aria-pressed="${isDone(s.key)}" aria-label="Marcar ${esc(s.title)} como hecha">${CHECK_SVG}</button>
+        <div><div class="slot">Sesión de cocina · ${esc(s.time||"")}</div><div class="name">${esc(s.title)}</div></div>
+        <div class="meta"><button class="btn small" type="button" data-session="${esc(s.key)}">Ver pasos</button></div>
+      </div>`).join("");
+    const meals = (d.meals||[]).map(m => `
+      <div class="item ${isDone(m.key)?"isdone":""}">
+        <button class="check" type="button" data-check="${esc(m.key)}" aria-pressed="${isDone(m.key)}" aria-label="Marcar ${esc(m.slot)} como hecha">${CHECK_SVG}</button>
+        <div><div class="slot">${esc(m.slot)}${m.time?" · "+esc(m.time):""}</div><div class="name">${esc(m.name)}</div></div>
+        <div class="meta">
+          <button class="btn small" type="button" data-meal="${esc(m.key)}">Cómo se hace</button>
+          ${m.safe?`<span class="safe">Seguro: ${esc(m.safe)}</span>`:""}
+        </div>
+      </div>`).join("");
+    const dayKeys = (sessionsByDay[di]||[]).map(s=>s.key).concat((d.meals||[]).map(m=>m.key));
+    const complete = dayKeys.length && dayKeys.every(isDone);
+    return `<section class="day ${isToday?"today":""} ${complete?"complete":""}">
+      <div class="dayhead"><h2>${esc(d.name || DAYS[di])}</h2><span class="date">${isToday?'<span class="todaytag">Hoy</span>':""}${fmt(date)}</span></div>
+      <div class="daybody"><span class="dayok">Día completo ✓</span>${sess}${meals}</div>
+    </section>`;
+  }).join("");
+
+  const all = itemsOf(week), done = all.filter(isDone).length;
+  const pct = all.length ? Math.round(done/all.length*100) : 0;
+  const fullDays = (week.days||[]).filter((d,di)=>{ const k=(sessionsByDay[di]||[]).map(s=>s.key).concat((d.meals||[]).map(m=>m.key)); return k.length && k.every(isDone); }).length;
+  $("hero").hidden = false;
+  $("ring").style.setProperty("--p", pct);
+  $("ringTxt").textContent = pct + "%";
+  $("statDone").textContent = `${done} de ${all.length} hechos`;
+  $("statDays").textContent = `${fullDays} ${fullDays===1?"día completo":"días completos"}`;
+  const domDone = isDone("s-dom");
+  const [t, s] =
+    pct === 100 ? ["¡Semana completa!", "Lo habéis bordado. A por la siguiente."] :
+    pct >= 75 ? ["¡Recta final!", "Quedan muy poquitos platos. Ya casi está."] :
+    pct >= 40 ? ["¡Vais genial!", "La semana va rodando sola gracias al batch cooking."] :
+    domDone ? ["¡Media semana ya está hecha!", "Con la sesión del domingo lista, ahora solo toca calentar y montar."] :
+    pct > 0 ? ["¡Buen arranque!", "Cada plato marcado es tiempo libre ganado."] :
+    ["¡Empezamos!", "Dos horas el domingo y la semana queda casi resuelta."];
+  $("cheer").textContent = t; $("cheerSub").textContent = s;
+}
+function confetti(x, y){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const colors = ["#b9a8ff","#ffb3c8","#9fe3c3","#ffe08a","#9cc9ff","#ffc2a8"];
+  for(let i=0;i<18;i++){
+    const c = document.createElement("i"); c.className="confetti";
+    c.style.left = x+"px"; c.style.top = y+"px"; c.style.background = colors[i%colors.length];
+    c.style.setProperty("--dx", (Math.random()*160-80)+"px"); c.style.setProperty("--dy", (Math.random()*-120-20)+"px");
+    document.body.appendChild(c); setTimeout(()=>c.remove(), 950);
+  }
+}
+
+// ---------- Interactions ----------
+$("prevBtn").addEventListener("click", () => { state.slot--; state.userPicked = true; render(); });
+$("nextBtn").addEventListener("click", () => { state.slot++; state.userPicked = true; render(); });
+
+$("grid").addEventListener("click", async e => {
+  const c = e.target.closest("[data-check]");
+  if(c){
+    const key = c.dataset.check, id = checkId(key), now = !isDone(key);
+    if(now){ const r = c.getBoundingClientRect(); confetti(r.left + r.width/2, r.top + r.height/2); }
+    state.checks[id] = now; render();
+    if(!state.db) return;
+    try{
+      if(now) await state.db.doc("checks/"+id).set({done:true, slot:state.slot, key, at:new Date().toISOString()});
+      else await state.db.doc("checks/"+id).delete();
+    }catch(err){ state.checks[id] = !now; render(); toast("No se ha podido guardar. Prueba otra vez."); }
+    return;
+  }
+  const m = e.target.closest("[data-meal]");
+  if(m){ showMeal(m.dataset.meal); return; }
+  const s = e.target.closest("[data-session]");
+  if(s){ showSession(s.dataset.session); }
+});
+
+function list(items, ordered){
+  if(!items || !items.length) return "";
+  const tag = ordered ? "ol" : "ul";
+  return `<${tag}>${items.map(i=>`<li>${esc(i)}</li>`).join("")}</${tag}>`;
+}
+function showMeal(key){
+  const w = currentWeek(); let meal=null, day=null;
+  (w.days||[]).forEach((d,i)=> (d.meals||[]).forEach(m=>{ if(m.key===key){ meal=m; day=i; } }));
+  if(!meal) return;
+  openSheet(meal.name, `
+    <p class="safe">${esc(DAYS[day])} · ${esc(meal.slot)}${meal.time?" · "+esc(meal.time):""}${meal.from?" · Sale de: "+esc(meal.from):""}</p>
+    ${meal.ingredients?.length?`<h3>Ingredientes (4 personas)</h3>${list(meal.ingredients)}`:""}
+    ${meal.steps?.length?`<h3>Cómo se hace</h3>${list(meal.steps,true)}`:""}
+    ${meal.tm?`<div class="note tm"><b>Thermomix</b>${esc(meal.tm)}</div>`:""}
+    ${meal.kids?`<div class="note"><b>Para las chicas</b>${esc(meal.kids)}</div>`:""}
+    ${meal.sport?`<div class="note"><b>Para el deportista</b>${esc(meal.sport)}</div>`:""}
+    ${meal.safe?`<div class="note"><b>Alimento seguro en la mesa</b>${esc(meal.safe)}</div>`:""}
+    <div class="sheet-actions"><button class="btn primary" type="button" id="markMeal">${isDone(key)?"Desmarcar":"Marcar como cocinado"}</button></div>`);
+  $("markMeal").addEventListener("click", () => { closeSheet(); document.querySelector(`[data-check="${CSS.escape(key)}"]`)?.click(); });
+}
+function showSession(key){
+  const s = (currentWeek().sessions||[]).find(x=>x.key===key); if(!s) return;
+  const store = "ing-" + state.slot + "-" + key;
+  const loadIng = () => { try{ return JSON.parse(localStorage.getItem(store)||"{}"); }catch{ return {}; } };
+  const got = loadIng();
+  const steps = s.steps||[];
+  const allIng = steps.flatMap(st=>st.ing||[]);
+  const stepReady = si => (steps[si].ing||[]).every((_,ii)=>loadIng()[`i${si}-${ii}`]);
+  const btnLabel = si => { const n=(steps[si].ing||[]).length, k=(steps[si].ing||[]).filter((_,ii)=>loadIng()[`i${si}-${ii}`]).length; return k===n ? `Ingredientes listos ✓` : `Ingredientes de este paso (${k}/${n})`; };
+  openSheet(s.title, `
+    <p class="safe">${esc(DAYS[s.day])} · ${esc(s.time||"")}</p>
+    ${s.intro?`<p>${esc(s.intro)}</p>`:""}
+    ${allIng.length?`<div class="sheet-actions" style="margin:0 0 12px"><button class="btn small" type="button" id="allIng" aria-expanded="false">Ver todos los ingredientes de la sesión (${allIng.length})</button></div><div class="ingbox" id="allIngBox" hidden>${list(allIng)}</div>`:""}
+    <ol class="steps-t">${steps.map((st,si)=>`<li><span class="t">${esc(st.t||"")}</span><div>${esc(st.text)}${st.yield?`<span class="y">Rinde: ${esc(st.yield)}</span>`:""}${st.ing&&st.ing.length?`<button class="btn small ingbtn ${stepReady(si)?"ready":""}" type="button" data-step="${si}" aria-expanded="false">${btnLabel(si)}</button><div class="ings" id="ings-${si}" hidden>${st.ing.map((x,ii)=>{ const id=`i${si}-${ii}`; return `<label class="shop-item ${got[id]?"got":""}"><input type="checkbox" data-ing="${id}" ${got[id]?"checked":""}><span>${esc(x)}</span></label>`; }).join("")}</div>`:""}</div></li>`).join("")}</ol>
+    ${s.tip?`<div class="note"><b>Truco</b>${esc(s.tip)}</div>`:""}
+    <div class="sheet-actions"><button class="btn primary" type="button" id="markSess">${isDone(key)?"Desmarcar":"Marcar sesión como hecha"}</button></div>`);
+  $("markSess").addEventListener("click", () => { closeSheet(); document.querySelector(`[data-check="${CSS.escape(key)}"]`)?.click(); });
+  $("allIng")?.addEventListener("click", e => { const box=$("allIngBox"); box.hidden=!box.hidden; e.currentTarget.setAttribute("aria-expanded", String(!box.hidden)); });
+  $("sheetBody").querySelectorAll(".ingbtn").forEach(b => b.addEventListener("click", () => {
+    const box = $("ings-"+b.dataset.step); box.hidden = !box.hidden; b.setAttribute("aria-expanded", String(!box.hidden));
+  }));
+  state.sheetChange = e => {
+    const id = e.target.dataset && e.target.dataset.ing; if(!id) return;
+    const g = loadIng(); g[id] = e.target.checked;
+    try{ localStorage.setItem(store, JSON.stringify(g)); }catch{}
+    e.target.closest(".shop-item").classList.toggle("got", e.target.checked);
+    const si = Number(id.slice(1).split("-")[0]);
+    const b = $("sheetBody").querySelector(`.ingbtn[data-step="${si}"]`);
+    if(b){ b.textContent = btnLabel(si); b.classList.toggle("ready", stepReady(si)); }
+  };
+}
+
+// ---------- Shopping list ----------
+function shopKey(){ return "shop-" + state.slot; }
+function loadGot(){ try{ return JSON.parse(localStorage.getItem(shopKey())||"{}"); }catch{ return {}; } }
+function saveGot(g){ try{ localStorage.setItem(shopKey(), JSON.stringify(g)); }catch{} }
+$("shopBtn").addEventListener("click", () => {
+  const w = currentWeek(); if(!w) return;
+  const got = loadGot();
+  const html = (w.shopping||[]).map((cat,ci)=>`
+    <div class="shop-cat"><h3>${esc(cat.cat)}</h3>
+    ${(cat.items||[]).map((it,ii)=>{ const id=`sh-${ci}-${ii}`; return `<label class="shop-item ${got[id]?"got":""}"><input type="checkbox" id="${id}" ${got[id]?"checked":""}><span>${esc(it)}</span></label>`; }).join("")}
+    </div>`).join("");
+  openSheet("Lista de la compra", `<p class="safe">${esc(w.title)} · 4 personas. Tacha lo que ya tienes en casa.</p>${html}
+    <div class="sheet-actions"><button class="btn primary" type="button" id="copyShop">Copiar lo que falta</button></div>
+    <textarea id="shopText" readonly hidden style="width:100%;min-height:160px;margin-top:10px;font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>`);
+  state.sheetChange = e => {
+    if(e.target.type!=="checkbox") return;
+    const g = loadGot(); g[e.target.id] = e.target.checked; saveGot(g);
+    e.target.closest(".shop-item").classList.toggle("got", e.target.checked);
+  };
+  $("copyShop").addEventListener("click", () => {
+    const g = loadGot();
+    const txt = (w.shopping||[]).map((cat,ci)=>{
+      const items = (cat.items||[]).filter((_,ii)=>!g[`sh-${ci}-${ii}`]);
+      return items.length ? cat.cat.toUpperCase()+"\n"+items.map(i=>"- "+i).join("\n") : "";
+    }).filter(Boolean).join("\n\n");
+    const ta = $("shopText");
+    navigator.clipboard.writeText(txt).then(()=>toast("Lista copiada"), ()=>{ ta.hidden=false; ta.value=txt; ta.select(); toast("Selecciónala y cópiala"); });
+  });
+});
+
+// ---------- Repeat choice ----------
+$("repeatSel").addEventListener("change", async e => {
+  const slots = state.calendar.slots.map(s=>({...s}));
+  slots[state.slot].week = e.target.value;
+  state.calendar.slots = slots; render();
+  try{ await state.db.doc("plan/calendar").update({slots}); }catch{ toast("No se ha podido guardar el cambio."); }
+});
+
+// ---------- Generation ----------
+function seasonFor(d){
+  const m = d.getMonth();
+  if(m>=8 && m<=10) return "otoño (calabaza, boniato, setas, coliflor, brócoli, granada, mandarina, caqui, manzana)";
+  if(m===11 || m<=1) return "invierno (alcachofa, coliflor, puerro, espinaca, acelga, naranja, mandarina, kiwi)";
+  if(m>=2 && m<=4) return "primavera (espárrago, guisante, haba, alcachofa, fresa, níspero)";
+  return "verano (tomate, calabacín, pimiento, berenjena, pepino, melón, sandía, melocotón)";
+}
+function sampleWeekShape(){
+  const ex = state.weeks["w1"];
+  if(!ex) return "";
+  const trimmed = {
+    title: ex.title,
+    sessions: [ { ...ex.sessions[0], steps: ex.sessions[0].steps.slice(0,2) } ],
+    days: [ { name: ex.days[1].name, meals: [ ex.days[1].meals[0] ] } ],
+    shopping: [ { cat: ex.shopping[0].cat, items: ex.shopping[0].items.slice(0,3) } ]
+  };
+  return JSON.stringify(trimmed);
+}
+function buildPrompt(n, startDate, avoid){
+  return `Eres dietista-nutricionista y cocinero experto en batch cooking para familias españolas.
+Diseña UNA semana de menú (domingo a sábado) para esta familia y devuélvela SOLO como JSON válido, sin texto extra.
+
+FAMILIA: 4 personas. Padre muy deportista (necesita 1,6–2 g de proteína/kg; doble ración de proteína). Madre (plato equilibrado: ½ verdura, ¼ proteína, ¼ hidrato). Dos hijas adolescentes comedoras selectivas (más hidrato, sin restringir, calcio y hierro).
+REGLAS:
+- Dos sesiones de cocina: domingo POR LA TARDE (~2 h, deja hecha la cena del domingo y las bases de lunes a miércoles) y miércoles (~60 min, para jueves y viernes). El resto de días solo calentar, montar o algo de 15 min. La comida del domingo es sencilla o libre (no sale de la sesión).
+- COSTUMBRES FIJAS: lunes comida = legumbre (presentada de forma amable: hamburguesas, croquetas, hummus, guiso con salsa lisa...); jueves comida = pasta; viernes cena = pizza casera de montaje.
+- Carne roja (ternera, cerdo, cordero) como máximo 1 vez por semana y nada de carne procesada salvo jamón cocido puntual. Prioriza aves, pescado (3 veces, al menos 1 azul), huevo y legumbre (intenta 3-4 veces: guisos, hummus, garbanzos crujientes en bowls...).
+- Tienen Thermomix (TM5/TM6): úsala con tiempos/temperatura/velocidad en sofritos, cremas, salsas, legumbres, masas y triturados.
+- Proteínas cocinadas sencillas y salsas/especias SIEMPRE aparte. Platos de montaje (bowls, wraps, tacos, pizza) frecuentes. Verdura escondida en salsas trituradas y verdura visible aparte.
+- Cada comida y cena lleva "safe": un alimento seguro que suelen aceptar (pan, arroz blanco, pasta, patata, queso...).
+- Alterna el grupo de proteína entre comida y cena (carne / pescado / huevo / legumbre).
+- Temporada de ${seasonFor(startDate)}. España, supermercado normal.
+- Sábado comida puede ser comida libre/fuera, con alternativa casera. Domingo comida igual: sencilla o libre.
+- NO repitas estos platos recientes: ${avoid.join("; ")}.
+- Español de España, frases cortas y claras.
+
+ESTRUCTURA EXACTA:
+{"title":"Semana ${n} · <tema corto>","sessions":[{"key":"s-dom","day":0,"title":"Sesión del domingo","time":"2 h","intro":"...","steps":[{"t":"0:00","text":"...","yield":"...","ing":["400 g de lentejas pardinas","1 cebolla"]}],"tip":"..."},{"key":"s-mie","day":3,"title":"Sesión del miércoles","time":"60 min","intro":"...","steps":[...]}],
+"days":[{"name":"Domingo","meals":[{"key":"d0-comida","slot":"Comida","name":"...","safe":"...","time":"10 min","from":"Sesión del domingo","ingredients":["..."],"steps":["..."],"tm":"(opcional)","kids":"(opcional)","sport":"(opcional)"},{"key":"d0-cena","slot":"Cena",...}]}, ... 7 días, Domingo a Sábado, keys d0..d6],
+"shopping":[{"cat":"Carne, pescado y huevos","items":["Contramuslo de pollo deshuesado, 2 kg"]},{"cat":"Lácteos","items":[]},{"cat":"Hidratos y legumbres","items":[]},{"cat":"Verdura y fruta","items":[]},{"cat":"Despensa","items":[]}]}
+En CADA paso de las sesiones, "ing" lista con cantidad los ingredientes que se usan en ese paso (vacío si no hay). Sé conciso: 3–6 ingredientes y 2–4 pasos por plato; 6–9 pasos en la sesión del domingo y 3–5 en la del miércoles. Cantidades para 4 personas.
+Ejemplo de estilo (recortado): ${sampleWeekShape()}`;
+}
+function validWeek(w){
+  return w && typeof w.title==="string" && Array.isArray(w.days) && w.days.length===7 &&
+    w.days.every(d=>Array.isArray(d.meals) && d.meals.every(m=>m.key && m.name)) &&
+    Array.isArray(w.sessions) && Array.isArray(w.shopping);
+}
+
+$("genBtn").addEventListener("click", () => {
+  if(!state.calendar){ toast("El plan aún no ha cargado."); return; }
+  const lastStart = slotStart(state.calendar.slots.length);
+  openSheet("Generar 2 semanas nuevas", `
+    <p>Se crean las semanas del siguiente ciclo, a partir del <b>${fmt(lastStart)}</b>: dos semanas nuevas y una tercera que repite la primera (podrás cambiarla por la segunda).</p>
+    <p class="safe">Tarda uno o dos minutos. No repite los platos de las últimas semanas y usa productos de temporada.</p>
+    <div class="sheet-actions"><button class="btn primary" type="button" id="goGen" ${state.sample?"":"disabled"}>Crear semanas</button></div>
+    <div class="gen-status" id="genStatus">${state.sample?"":"En esta versión las semanas nuevas no se generan desde la página: pídeselas a Claude en el chat y se actualiza la web. Mientras tanto, el ciclo de 3 semanas se repite solo."}</div>`);
+  const go = $("goGen"); if(!go) return;
+  go.addEventListener("click", () => generate(go));
+});
+
+async function generate(btn){
+  const status = $("genStatus");
+  btn.disabled = true; $("genBtn").disabled = true;
+  const ids = Object.keys(state.weeks);
+  let nextN = Math.max(0, ...Object.values(state.weeks).map(w=>w.n||0)) + 1;
+  const recent = Object.values(state.weeks).sort((a,b)=>(b.n||0)-(a.n||0)).slice(0,4)
+    .flatMap(w=>(w.days||[]).flatMap(d=>(d.meals||[]).map(m=>m.name)));
+  const created = [];
+  try{
+    for(let k=0;k<2;k++){
+      const n = nextN + k;
+      const startDate = slotStart(state.calendar.slots.length + k);
+      status.textContent = `Creando la semana ${n}…`;
+      let w = null, lastErr = null;
+      for(let attempt=0; attempt<2 && !w; attempt++){
+        try{
+          const res = await state.sample.json(buildPrompt(n, startDate, recent.concat(created.flatMap(c=>c.days.flatMap(d=>d.meals.map(m=>m.name))))), {
+            modelTier:"complex", cache:false,
+            onText: ({text}) => { status.textContent = `Creando la semana ${n}… (${Math.round(text.length/1000)} k caracteres)`; }
+          });
+          if(validWeek(res)) w = res; else lastErr = new Error("formato");
+        }catch(err){
+          lastErr = err;
+          if(err && (err.code==="not_granted" || err.code==="rate_limited" || err.code==="sampling_disabled")) break;
+        }
+      }
+      if(!w) throw lastErr || new Error("formato");
+      w.n = n;
+      w.days.forEach((d,i)=>{ d.name = DAYS[i]; (d.meals||[]).forEach((m,j)=>{ m.key = m.key || `d${i}-${j}`; }); });
+      w.sessions.forEach((s,i)=>{ s.key = s.key || ("s"+i); });
+      await state.db.doc("weeks/w"+n).set(w);
+      created.push(w);
+    }
+    const slots = state.calendar.slots.concat([{week:"w"+nextN},{week:"w"+(nextN+1)},{week:"w"+nextN, repeat:true}]);
+    await state.db.doc("plan/calendar").update({slots});
+    status.textContent = "Listo. Ya tienes el ciclo nuevo en el calendario.";
+    toast("Semanas creadas");
+  }catch(err){
+    const code = err && err.code;
+    status.innerHTML = `<span class="err">${
+      code==="not_granted" ? "Hace falta permitir que la app pregunte a Claude." :
+      code==="rate_limited" ? "Demasiadas peticiones seguidas. Espera unos minutos y vuelve a probar." :
+      created.length ? "Se creó una semana, pero la segunda falló. Vuelve a pulsar para intentarlo." :
+      "No se ha podido crear la semana. Vuelve a intentarlo en un momento."}</span>`;
+    if(created.length===1){
+      // keep the one created week reachable: add it as a slot so it is not lost
+      try{ const slots = state.calendar.slots.concat([{week:"w"+nextN}]); await state.db.doc("plan/calendar").update({slots}); }catch{}
+    }
+    btn.disabled = false;
+  }finally{ $("genBtn").disabled = false; }
+}
+
+// ---------- Boot ----------
+(async () => {
+  const claude = window.claude;
+  if(!claude || !claude.use){ return; }
+  const [db, sample] = await Promise.all([claude.use("db"), claude.use("sample")]);
+  state.db = db; state.sample = sample;
+  if(!db){ return; }
+  db.doc("plan/calendar").onSnapshot(snap => {
+    if(!snap.exists){ return; }
+    state.calendar = snap.data();
+    if(!state.userPicked) state.slot = todaySlot();
+    state.slot = Math.min(state.slot, state.calendar.slots.length-1);
+    render();
+  });
+  db.collection("weeks").onSnapshot(snap => {
+    state.weeks = {}; snap.docs.forEach(d => state.weeks[d.id] = d.data());
+    render();
+  });
+  db.collection("checks").limit(1000).onSnapshot(snap => {
+    state.checks = {}; snap.docs.forEach(d => { if(d.data()?.done) state.checks[d.id] = true; });
+    render();
+  });
+})();
+})();
+</script>
+
+</body>
+</html>
